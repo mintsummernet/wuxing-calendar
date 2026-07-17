@@ -633,16 +633,66 @@ const ELEMENTS = [
   { key: '土', varName: '--el-tu' },
 ];
 
-// 只有「主要五行＝火」有定義規則，四類都用原始規則書的固定干支清單比對，
-// 不套用五行生克公式（那是先前誤植的假設，非使用者定案的規則）。
-const CATS = [
-  { key: 'wealth',  label: '得財', varName: '--wealth',  list: new Set(['己丑','辛丑','庚辰','辛酉','庚申','戊申']) },
-  { key: 'career',  label: '事業', varName: '--career',  list: new Set(['癸丑','壬子','癸亥','壬申','壬辰']) },
-  { key: 'romance', label: '桃花', varName: '--romance', list: new Set(['壬辰','癸亥','壬子','辛亥','庚辰','庚子','癸丑','癸酉','壬申']) },
-  { key: 'avoid',   label: '避凶', varName: '--avoid',   list: new Set(['丁巳','丁未','丙戌','丙午']) },
-];
+/* =====================================================================
+   五行規則資料（作者編輯區）
+   =====================================================================
+   每個五行（金／木／水／火／土）各自定義「得財／事業／桃花／避凶」
+   四類的干支清單。四柱（年／月／日／時）比對時，只要該柱的干支字串
+   完全符合下面清單裡的任一項，就算命中。
 
-const RULES_ELEMENT = '火'; // 目前只有這個五行有定義規則
+   目前只有「火」填了規則，其餘四行的陣列都是空的（[]），所以畫面上
+   只有選「火」才會顯示得財/桃花/事業/避凶的星級與月曆標記，其他四行
+   會顯示「尚無規則」。
+
+   要新增某個五行的規則時：
+   - 直接把該五行、該類別的陣列填入干支字串即可，例如：
+       wealth: ['甲子', '乙丑'],
+   - 干支格式為「天干＋地支」共兩個字，例如 '甲子'、'辛丑'。
+     天干：甲乙丙丁戊己庚辛壬癸　地支：子丑寅卯辰巳午未申酉戌亥
+   - 只要四類其中一類有填內容，該五行就會自動視為「已啟用」，
+     不需要另外修改程式邏輯。
+   - 改完存檔、commit + push 給 Netlify 部署就會生效。
+   ===================================================================== */
+const RULES_BY_ELEMENT = {
+  火: {
+    wealth:  ['己丑', '辛丑', '庚辰', '辛酉', '庚申', '戊申'],
+    career:  ['癸丑', '壬子', '癸亥', '壬申', '壬辰'],
+    romance: ['壬辰', '癸亥', '壬子', '辛亥', '庚辰', '庚子', '癸丑', '癸酉', '壬申'],
+    avoid:   ['丁巳', '丁未', '丙戌', '丙午'],
+  },
+  金: {
+    wealth:  [],
+    career:  [],
+    romance: [],
+    avoid:   [],
+  },
+  木: {
+    wealth:  [],
+    career:  [],
+    romance: [],
+    avoid:   [],
+  },
+  水: {
+    wealth:  [],
+    career:  [],
+    romance: [],
+    avoid:   [],
+  },
+  土: {
+    wealth:  [],
+    career:  [],
+    romance: [],
+    avoid:   [],
+  },
+};
+
+// 四類的顯示名稱與對應色票變數（跟五行的規則資料分開放，通常不需要改這裡）
+const CAT_META = [
+  { key: 'wealth', label: '得財', varName: '--wealth' },
+  { key: 'career', label: '事業', varName: '--career' },
+  { key: 'romance', label: '桃花', varName: '--romance' },
+  { key: 'avoid', label: '避凶', varName: '--avoid' },
+];
 
 const MIN_YEAR = 1900;
 const MAX_YEAR = 2100;
@@ -791,14 +841,17 @@ function hourStemIdx(dayStemIdx, hourBranchIdx) {
 }
 
 function isRulesEnabled(userElement) {
-  return userElement === RULES_ELEMENT;
+  const rules = RULES_BY_ELEMENT[userElement];
+  if (!rules) return false;
+  return CAT_META.some(cat => rules[cat.key] && rules[cat.key].length > 0);
 }
 
 function computeCategories(y, m, d, userElement) {
   if (!isRulesEnabled(userElement)) return [];
+  const rules = RULES_BY_ELEMENT[userElement];
   const p = pillarsForDate(y, m, d);
-  return CATS.map(cat => {
-    const list = cat.list;
+  return CAT_META.map(cat => {
+    const list = new Set(rules[cat.key]);
     const yearMatch = list.has(p.year.name);
     const monthMatch = list.has(p.month.name);
     const dayMatch = list.has(p.day.name);
