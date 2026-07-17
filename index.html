@@ -7,7 +7,7 @@
   --ink: #2b2f36;
   --muted: rgba(43,47,54,0.45);
   --muted-strong: rgba(43,47,54,0.65);
-  --shadow-dark: rgba(90, 96, 104, 0.6);
+  --shadow-dark: rgba(90, 96, 104, 0.4);
   --shadow-light: rgba(255, 255, 255, 0.6);
   --good: #3f7350;
   --wealth: #b0975f;
@@ -164,9 +164,10 @@ body {
 
 .cal-card { background: var(--bg); border-radius: 24px; padding: clamp(18px, 2.5vw, 28px); display: flex; flex-direction: column; gap: 18px; }
 .weekday-row, .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.day-grid { justify-items: center; }
 .weekday-row span { text-align: center; font: 700 12px/1 var(--font-body); color: var(--muted); padding-bottom: 4px; letter-spacing: 0.04em; }
 
-.day-wrap { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; padding: 2px 0; background: none; border: none; font: inherit; color: inherit; transition: opacity .15s ease-in-out; }
+.day-wrap { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; padding: 2px 0; background: none; border: none; font: inherit; color: inherit; transition: opacity .15s ease-in-out; }
 .day-wrap.out-of-month { opacity: 0.32; }
 .day-cell {
   position: relative;
@@ -819,7 +820,7 @@ function computeCategories(y, m, d, userElement) {
 
 const today = new Date();
 const state = {
-  element: localStorage.getItem('wx_element') || '木',
+  element: localStorage.getItem('wx_element') || '金',
   viewYear: today.getFullYear(),
   viewMonth: today.getMonth() + 1,
   selYear: today.getFullYear(),
