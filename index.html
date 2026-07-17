@@ -55,18 +55,29 @@ body {
   margin: 0 auto;
 }
 
-.raised {
-  box-shadow: 3px 3px 5px var(--shadow-dark), -3px -3px 5px var(--shadow-light);
+/* Neumorphism 陰影：暗側/亮側拆成獨立偽元素，才能各自套用不同 mix-blend-mode
+   （單一 box-shadow 屬性內的多層陰影無法個別指定 blend mode）。 */
+.raised, .raised-lg, .pressed { position: relative; }
+.raised::before, .raised::after,
+.raised-lg::before, .raised-lg::after,
+.pressed::before, .pressed::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
 }
-.raised-lg {
-  box-shadow: 5px 5px 9px var(--shadow-dark), -5px -5px 9px var(--shadow-light);
-}
-.pressed {
-  box-shadow: inset 2px 2px 3px var(--shadow-dark), inset -2px -2px 3px var(--shadow-light);
-}
+.raised::before { box-shadow: 3px 3px 5px var(--shadow-dark); mix-blend-mode: hard-light; }
+.raised::after { box-shadow: -3px -3px 5px var(--shadow-light); mix-blend-mode: soft-light; }
+.raised-lg::before { box-shadow: 5px 5px 9px var(--shadow-dark); mix-blend-mode: hard-light; }
+.raised-lg::after { box-shadow: -5px -5px 9px var(--shadow-light); mix-blend-mode: soft-light; }
+.pressed::before { box-shadow: inset 2px 2px 3px var(--shadow-dark); mix-blend-mode: hard-light; }
+.pressed::after { box-shadow: inset -2px -2px 3px var(--shadow-light); mix-blend-mode: soft-light; }
 
 .neu-btn { transition: box-shadow .15s ease-in-out, transform .15s ease-in-out, background-color .15s ease-in-out, color .15s ease-in-out; cursor: pointer; }
-.neu-btn:hover, .neu-btn:active { box-shadow: inset 2px 2px 3px var(--shadow-dark), inset -2px -2px 3px var(--shadow-light) !important; transform: scale(0.97); }
+.neu-btn:hover::before, .neu-btn:active::before { box-shadow: inset 2px 2px 3px var(--shadow-dark) !important; }
+.neu-btn:hover::after, .neu-btn:active::after { box-shadow: inset -2px -2px 3px var(--shadow-light) !important; }
+.neu-btn:hover, .neu-btn:active { transform: scale(0.97); }
 .neu-btn:focus-visible { outline: 2px solid var(--good); outline-offset: 2px; }
 
 /* ---------- 自訂圖示（遮罩＋currentColor，可依情境上色） ---------- */
@@ -102,10 +113,11 @@ body {
   transition: background-color .15s ease-in-out, color .15s ease-in-out, box-shadow .15s ease-in-out, transform .15s ease-in-out;
 }
 .chip.active { color: #f4f2ec; cursor: default; }
+.chip.active::before { box-shadow: inset 2px 2px 3px rgba(0,0,0,0.25) !important; }
+.chip.active::after { box-shadow: inset -1px -1px 2px rgba(255,255,255,0.15) !important; }
 .chip.active:hover,
 .chip.active:active {
   transform: none !important;
-  box-shadow: inset 2px 2px 3px rgba(0,0,0,0.25), inset -1px -1px 2px rgba(255,255,255,0.15) !important;
 }
 
 /* ---------- 主體：月曆＋詳情 ---------- */
@@ -157,15 +169,35 @@ body {
 .day-wrap { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; padding: 2px 0; background: none; border: none; font: inherit; color: inherit; transition: opacity .15s ease-in-out; }
 .day-wrap.out-of-month { opacity: 0.32; }
 .day-cell {
+  position: relative;
   width: clamp(30px, 4.8vw, 40px); aspect-ratio: 1; border-radius: 50%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  transition: background-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  transition: background-color .15s ease-in-out;
 }
+.day-cell::before, .day-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: box-shadow .15s ease-in-out;
+}
+.day-cell::before { mix-blend-mode: hard-light; }
+.day-cell::after { mix-blend-mode: soft-light; }
 .day-cell.selected,
 .day-wrap:hover .day-cell,
 .day-wrap:active .day-cell {
   background: var(--bg);
-  box-shadow: inset 1px 1px 2px var(--shadow-dark), inset -1px -1px 2px var(--shadow-light);
+}
+.day-cell.selected::before,
+.day-wrap:hover .day-cell::before,
+.day-wrap:active .day-cell::before {
+  box-shadow: inset 1px 1px 2px var(--shadow-dark);
+}
+.day-cell.selected::after,
+.day-wrap:hover .day-cell::after,
+.day-wrap:active .day-cell::after {
+  box-shadow: inset -1px -1px 2px var(--shadow-light);
 }
 .day-cell.today,
 .day-wrap:hover .day-cell.today,
@@ -815,7 +847,6 @@ function renderElementChips() {
     btn.disabled = isActive;
     if (isActive) {
       btn.style.background = `var(${el.varName})`;
-      btn.style.boxShadow = 'inset 2px 2px 3px rgba(0,0,0,0.25), inset -1px -1px 2px rgba(255,255,255,0.15)';
     }
     btn.addEventListener('click', () => {
       state.element = el.key;
