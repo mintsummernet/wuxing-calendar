@@ -163,10 +163,10 @@ body {
   .cal-col { order: 1 !important; }
   .detail-col { order: 2 !important; }
   .shell { gap: 40px; }
-  .topbar { flex-direction: column; align-items: center; text-align: center; }
-  .topbar-right { flex-direction: column; justify-content: center; width: 100%; }
-  .element-picker { flex-direction: column; }
-  .gender-switch-wrap { flex-direction: column; }
+  .topbar { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; text-align: left; }
+  .topbar-right { display: contents; }
+  .gender-switch-wrap { flex-direction: row; }
+  .element-picker { flex-direction: column; flex-basis: 100%; justify-content: center; text-align: center; }
   .detail-heading { text-align: center; }
 }
 
